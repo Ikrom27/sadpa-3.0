@@ -1,18 +1,26 @@
 #include <iostream>
 #include <fstream>
-#include "HashTable.h"
+#include "HeshTable.h"
 #include "Book.h"
+
+void testHeshT() {
+    Book Schedule("test.txt");
+    HeshTable table;
+
+    table.add(Schedule.GroupNumber, Schedule); // key="» ¡Œ-07-21"
+
+    
+    Book test1("test1.txt");
+    table.add(test1.GroupNumber, test1);
+
+    table.
+}
 
 
 int main()
 {
     setlocale(LC_ALL, "rus");
 
-    Book Schedule("test.txt");
-    HashTable table;
-    table.add(Schedule);
-    table.add(Schedule);
-    std::cout << table.hashFunc(Schedule);
 
     system("pause");
 }

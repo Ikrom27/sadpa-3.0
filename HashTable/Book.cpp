@@ -7,14 +7,8 @@ Book::Book()
 Book::Book(std::string path)
 {
 
-	std::ifstream ft(path, std::ios::out);
-
-	if (!ft)
-	{
-		std::cout << "файл не открыт";
-		return;
-	}
-
+	std::fstream ft(path, std::ios::out);
+	openCheck(ft);
 	while (!ft.eof()) {
 		ft.getline(GroupNumber, sizeof(GroupNumber));
 		ft >> NumberOfStudents;
@@ -25,125 +19,112 @@ Book::Book(std::string path)
 	ft.close();
 }
 
-void create_bin_file(std::string fnameText, std::string fnameBin)
+void Book::display(Book& file)
 {
-	Book file;
+	std::cout << file.GroupNumber << std::endl;
+	std::cout << file.NumberOfStudents << std::endl;
+	std::cout << file.DirectionCode << std::endl;
+	std::cout << file.ProfileCode << std::endl;
+}
 
-	std::ifstream ft;
-	std::ofstream fb;
+Book* Book::writeToBook(std::fstream& ft)
+{
+	ft.getline(GroupNumber, sizeof(GroupNumber));
+	ft >> NumberOfStudents;
+	ft.get();
+	ft.getline(DirectionCode, sizeof(DirectionCode));
+	ft.getline(ProfileCode, sizeof(ProfileCode));
+	return this;
+}
 
-	ft.open(fnameText, std::ios::out);
-	fb.open(fnameBin, std::ios::out | std::ios::binary);
-
-	if (!ft || !fb)
-	{
-		std::cout << "файл не открыт";
-		return;
-	}
-
+void Book::create_bin_file(std::string fnameText, std::string fnameBin)
+{
+	Book* file;
+	std::fstream ft(fnameText, std::ios::out);
+	std::fstream fb(fnameBin, std::ios::out | std::ios::binary);
+	openCheck(fb);
+	openCheck(ft);
 	while (!ft.eof()) {
-		ft.getline(file.GroupNumber, sizeof(file.GroupNumber));
-		ft >> file.NumberOfStudents;
-		ft.get();
-		ft.getline(file.DirectionCode, sizeof(file.DirectionCode));
-		ft.getline(file.ProfileCode, sizeof(file.ProfileCode));
+		file = writeToBook(ft);
 		fb.write((char*)&file, sizeof(Book));
 	}
-
-	ft.close();
 	fb.close();
 }
 
-void out_bin_file(std::string fnameBin)
+void Book::openCheck(std::fstream& ft)
 {
-	Book file;
-	std::ifstream fb(fnameBin, std::ios::out | std::ios::binary);
-	if (!fb)
+	if (!ft)
 	{
 		std::cout << "файл не открыт";
 		return;
 	}
+}
+
+void Book::out_bin_file(std::string fnameBin)
+{
+	Book file;
+	std::fstream fb(fnameBin, std::ios::out | std::ios::binary);
+	openCheck(fb);
 	fb.read((char*)&file, sizeof(Book));
 	while (!fb.eof()) {
-		std::cout << file.GroupNumber << std::endl;
-		std::cout << file.NumberOfStudents << std::endl;
-		std::cout << file.DirectionCode << std::endl;
-		std::cout << file.ProfileCode << std::endl;
+		display(file);
 		fb.read((char*)&file, sizeof(Book));
 	}
 	fb.clear();
 	fb.close();
 }
 
-void out_bin_file_by_key(std::string fnameBin, int key)
+Book& Book::search(std::fstream& fb, Book& file, int key)
 {
-	Book file;
-	std::ifstream fb;
-	int note_num=1;
-
-	std::cout << "Print note number: "; std::cin >> note_num;
-
-	fb.open(fnameBin, std::ios::out | std::ios::binary);
-	if (!fb)
-	{
-		std::cout << "файл не открыт";
-		return;
-	}
+	int note_num = 1;
 	fb.read((char*)&file, sizeof(Book));
-
 	while (!fb.eof()) {
 		if (key == note_num) {
-			std::cout << file.GroupNumber << std::endl;
-			std::cout << file.NumberOfStudents << std::endl;
-			std::cout << file.DirectionCode << std::endl;
-			std::cout << file.ProfileCode << std::endl;
-			return;
+			return file;
 		}
 		note_num += 1;
 		fb.read((char*)&file, sizeof(Book));
 	}
+}
 
-	std::cout << "¬ведено неверное значение";
-
-	fb.clear();
+void Book::out_bin_file_by_key(std::string fnameBin, int key)
+{
+	Book file;
+	std::fstream fb(fnameBin, std::ios::out | std::ios::binary);
+	openCheck(fb);
+	file = search(fb, file, key);
+	display(file);
 	fb.close();
 	return;
 }
 
-void delete_note_by_key(std::string bin_path, int key)
+Book& Book::getLastRecord(std::fstream& fs, Book& last_record)
+{
+	fs.seekg(sizeof(Book), std::ios_base::end);
+	fs.read((char*)&last_record, sizeof(Book));
+	fs.seekg(0);
+	return last_record;
+}
+
+void Book::delete_note_by_key(std::string bin_path, int key)
 {
 	std::fstream fs(bin_path, std::ios_base::in | std::ios_base::out | std::ios_base::binary);
+	openCheck(fs);
+	Book last_record = getLastRecord(fs, last_record);
 
-	Book last_record;
-
-	fs.seekg(-static_cast<int>(sizeof(Book)), std::ios_base::end);
-	if (fs.tellg() != -1)
-	{
-		fs.read(reinterpret_cast<char*>(&last_record), sizeof(Book));
-	}
-	else
-	{
-		throw std::runtime_error("No information in file");
-	}
-	fs.seekg(0);
 	int n = 1;
 	Book card_buffer;
 	int current_position = 0;
 	while (true)
 	{
 		current_position = fs.tellg();
-		fs.read(reinterpret_cast<char*>(&card_buffer), sizeof(Book));
+		fs.read((char*)&card_buffer, sizeof(Book));
 		if (n == key)
 		{
 			fs.seekg(current_position);
-			fs.write(reinterpret_cast<char*>(&last_record), sizeof(Book));
+			fs.write((char*)&last_record, sizeof(Book));
 			fs.close();
 			return;
-		}
-		if (fs.eof())
-		{
-			fs.close();
-			throw std::runtime_error("Can't find record with such key");
 		}
 		n += 1;
 	}
