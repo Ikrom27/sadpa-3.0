@@ -1,131 +1,128 @@
 #include "Book.h"
 
-Book::Book()
+bool Book::equal(Book file)
 {
-}
-
-Book::Book(std::string path)
-{
-
-	std::fstream ft(path, std::ios::out);
-	openCheck(ft);
-	while (!ft.eof()) {
-		ft.getline(GroupNumber, sizeof(GroupNumber));
-		ft >> NumberOfStudents;
-		ft.get();
-		ft.getline(DirectionCode, sizeof(DirectionCode));
-		ft.getline(ProfileCode, sizeof(ProfileCode));
+	if ((strcmp(GroupNumber, file.GroupNumber) == 0) and
+		(strcmp(DirectionCode, file.DirectionCode) == 0) and
+		(strcmp(ProfileCode, file.ProfileCode) == 0) and
+		(NumberOfStudents == file.NumberOfStudents))
+	{
+		return true;
 	}
-	ft.close();
+	return false;
 }
 
-void Book::display(Book& file)
+BookHeadler::BookHeadler(std::string path_)
 {
-	std::cout << file.GroupNumber << std::endl;
-	std::cout << file.NumberOfStudents << std::endl;
-	std::cout << file.DirectionCode << std::endl;
-	std::cout << file.ProfileCode << std::endl;
+	fnameText = path_;
+	fnameBin = path_ + ".bin";
 }
 
-Book* Book::writeToBook(std::fstream& ft)
+void BookHeadler::createBinFile()
 {
-	ft.getline(GroupNumber, sizeof(GroupNumber));
-	ft >> NumberOfStudents;
-	ft.get();
-	ft.getline(DirectionCode, sizeof(DirectionCode));
-	ft.getline(ProfileCode, sizeof(ProfileCode));
-	return this;
-}
-
-void Book::create_bin_file(std::string fnameText, std::string fnameBin)
-{
-	Book* file;
-	std::fstream ft(fnameText, std::ios::out);
-	std::fstream fb(fnameBin, std::ios::out | std::ios::binary);
-	openCheck(fb);
-	openCheck(ft);
+	Book file;
+	std::ifstream ft(fnameText, std::ios::out);
+	std::ofstream fb(fnameBin, std::ios::out | std::ios::binary);
 	while (!ft.eof()) {
-		file = writeToBook(ft);
+		writeToBook(ft, file);
 		fb.write((char*)&file, sizeof(Book));
 	}
+	ft.close();
 	fb.close();
 }
 
-void Book::openCheck(std::fstream& ft)
-{
-	if (!ft)
-	{
-		std::cout << "файл не открыт";
-		return;
-	}
-}
-
-void Book::out_bin_file(std::string fnameBin)
+void BookHeadler::outBinFile()
 {
 	Book file;
-	std::fstream fb(fnameBin, std::ios::out | std::ios::binary);
-	openCheck(fb);
+	std::ifstream fb(fnameBin, std::ios::out | std::ios::binary);
 	fb.read((char*)&file, sizeof(Book));
 	while (!fb.eof()) {
 		display(file);
 		fb.read((char*)&file, sizeof(Book));
 	}
-	fb.clear();
 	fb.close();
 }
 
-Book& Book::search(std::fstream& fb, Book& file, int key)
-{
-	int note_num = 1;
-	fb.read((char*)&file, sizeof(Book));
-	while (!fb.eof()) {
-		if (key == note_num) {
-			return file;
-		}
-		note_num += 1;
-		fb.read((char*)&file, sizeof(Book));
-	}
-}
-
-void Book::out_bin_file_by_key(std::string fnameBin, int key)
+void BookHeadler::find(int key)
 {
 	Book file;
-	std::fstream fb(fnameBin, std::ios::out | std::ios::binary);
-	openCheck(fb);
-	file = search(fb, file, key);
-	display(file);
+	std::ifstream fb(fnameBin, std::ios::out | std::ios::binary);
+	fb.read((char*)&file, sizeof(Book));
+	while (!fb.eof()) {
+		if (key == file.NoteNumber) {
+			display(file);
+			fb.close();
+			return;
+		}
+		fb.read((char*)&file, sizeof(Book));
+	}
 	fb.close();
-	return;
 }
 
-Book& Book::getLastRecord(std::fstream& fs, Book& last_record)
+void BookHeadler::find(char* key)
 {
-	fs.seekg(sizeof(Book), std::ios_base::end);
-	fs.read((char*)&last_record, sizeof(Book));
-	fs.seekg(0);
-	return last_record;
+	Book file;
+	std::ifstream fb(fnameBin, std::ios::out | std::ios::binary);
+	fb.read((char*)&file, sizeof(Book));
+	while (!fb.eof()) {
+		if (strcmp(key, file.GroupNumber) == 0) {
+			display(file);
+			fb.close();
+			return;
+		}
+		fb.read((char*)&file, sizeof(Book));
+	}
+	fb.close();
 }
 
-void Book::delete_note_by_key(std::string bin_path, int key)
+void BookHeadler::removeNote(char* key)
 {
-	std::fstream fs(bin_path, std::ios_base::in | std::ios_base::out | std::ios_base::binary);
-	openCheck(fs);
-	Book last_record = getLastRecord(fs, last_record);
+	Book last_record = getLastRecord();
+	Book buffer;
 
-	int n = 1;
-	Book card_buffer;
+	std::fstream fs(fnameBin, std::ios_base::in | std::ios_base::out | std::ios_base::binary);
 	int current_position = 0;
-	while (true)
+	while (!fs.eof())
 	{
 		current_position = fs.tellg();
-		fs.read((char*)&card_buffer, sizeof(Book));
-		if (n == key)
+		fs.read((char*)&buffer, sizeof(Book));
+		if (strcmp(key, buffer.GroupNumber) == 0)
 		{
 			fs.seekg(current_position);
 			fs.write((char*)&last_record, sizeof(Book));
 			fs.close();
 			return;
 		}
-		n += 1;
 	}
+	fs.close();
+}
+
+void BookHeadler::writeToBook(std::ifstream& ft, Book& file)
+{
+	ft >> file.NoteNumber;
+	ft.get();
+	ft.getline(file.GroupNumber, sizeof(file.GroupNumber));
+	ft >> file.NumberOfStudents;
+	ft.get();
+	ft.getline(file.DirectionCode, sizeof(file.DirectionCode));
+	ft.getline(file.ProfileCode, sizeof(file.ProfileCode));
+}
+
+void BookHeadler::display(Book& file)
+{
+	std::cout << file.NoteNumber << std::endl;
+	std::cout << file.GroupNumber << std::endl;
+	std::cout << file.NumberOfStudents << std::endl;
+	std::cout << file.DirectionCode << std::endl;
+	std::cout << file.ProfileCode << std::endl;
+}
+
+Book BookHeadler::getLastRecord()
+{
+	Book lastRecord;
+	std::fstream fs(fnameBin, std::ios_base::in | std::ios_base::out | std::ios_base::binary);
+	fs.seekg((-1)*(sizeof(Book)), std::ios_base::end);
+	fs.read(reinterpret_cast<char*>(&lastRecord), sizeof(Book));
+	fs.seekg(0);
+	return lastRecord;
 }

@@ -128,12 +128,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Book.cpp" />
-    <ClCompile Include="HeshTable.cpp" />
+    <ClCompile Include="Headler.cpp" />
+    <ClCompile Include="HeshMap.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="textGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Book.h" />
-    <ClInclude Include="HeshTable.h" />
+    <ClInclude Include="Headler.h" />
+    <ClInclude Include="HeshMap.h" />
+    <ClInclude Include="textGenerator.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

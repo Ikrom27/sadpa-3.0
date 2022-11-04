@@ -3,21 +3,30 @@
 #include <iostream>
 #include <fstream>
 
-struct Book
-{
+
+struct Book {
+	int NoteNumber;
 	char GroupNumber[11];
 	int NumberOfStudents;
 	char DirectionCode[9];
 	char ProfileCode[11];
-	Book();
-	Book(std::string path);
+	bool equal(Book file);
+};
+
+class BookHeadler{
+protected:
+	std::string fnameText;
+	std::string fnameBin;
+public:
+	BookHeadler(std::string path);
+	void createBinFile();
+	void outBinFile();
+	void find(int key);
+	void find(char* key);
+	void removeNote(char* key);
+
+	void writeToBook(std::ifstream& ft, Book& file);
 	void display(Book& file);
-	Book* writeToBook(std::fstream& ft);
-	void create_bin_file(std::string fnameText, std::string fnameBin);
-	void openCheck(std::fstream& ft);
-	void out_bin_file(std::string fnameBin);
-	Book& search(std::fstream& fb, Book& file, int key);
-	void out_bin_file_by_key(std::string fnameBin, int key);
-	void delete_note_by_key(std::string bin_path, int key);
-	Book& getLastRecord(std::fstream& fs, Book& last_record);
+	Book getLastRecord();
+	bool equal(Book& file1, Book& file2);
 };
