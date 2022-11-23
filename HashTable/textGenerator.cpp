@@ -10,11 +10,10 @@ void textGenerator::generateText(std::string path, int limit)
 {
 	std::ofstream file(path);
 	for (int i = 1; i < limit; i++) {
-		file << i << std::endl;
 		file << generateGroupNum() << std::endl;
 		file << generateStudentNum() << std::endl;
-		file << generateStudentNum() << std::endl;
 		file << generateDirectionCode() << std::endl;
+		file << generateProfileCode() << std::endl;
 	}
 	file.close();
 }

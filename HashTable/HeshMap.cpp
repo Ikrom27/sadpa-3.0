@@ -2,9 +2,9 @@
 
 HeshMap::HeshMap()
 {
-	size = 100;
+	size = 19;
 	elements = 0;
-	table = new std::list<Book>[size];
+	table = new std::list<Element>[size];
 }
 
 int HeshMap::heshFunc(char* key)
@@ -12,20 +12,14 @@ int HeshMap::heshFunc(char* key)
 	int index = 0;
 	for (int i = 0; i < sizeof(key); i++) {
 		if (key[i] != '-') {
-			index += abs(key[i]);
+			index += abs(key[i]) + abs(key[sizeof(key)-i]);
 		}
 	}
-
-	/*
-	int group = (key[5] - 48) * 10 + key[6] - 48;
-	int year = (key[8] - 48) * 10 + key[9] - 48;
-	int index = group + year;
-	*/
 	if (size < index) { resize(index); }
 	return index;
 }
 
-void HeshMap::add(char* key, Book element)
+void HeshMap::add(char* key, int noteNum)
 {
 	int index = heshFunc(key);
 	if (table[index].size() == 1) {
@@ -34,27 +28,35 @@ void HeshMap::add(char* key, Book element)
 	if (table[index].size() == 0) {
 		update();
 	}
-	table[heshFunc(key)].push_back(element);
+	Element newElem;
+	memcpy(newElem.key, key, 11);
+	newElem.noteNum = noteNum;
+	table[index].push_back(newElem);
 }
 
-Book HeshMap::find(char* key)
+Element HeshMap::find(char* key)
 {
-	std::list<Book> Node = table[heshFunc(key)];
-	for (Book i : Node) {
-		if (strcmp(key, i.GroupNumber) == 0) {
+	std::list<Element> Node = table[heshFunc(key)];
+	for (Element i : Node) {
+		if (strcmp(key, i.key) == 0) {
 			return i;
 		}
 	}
 	std::cout << "Запись не найдена";
 }
 
+int HeshMap::findNum(char* key)
+{
+	return find(key).noteNum;
+}
+
 void HeshMap::remove(char* key)
 {
-	std::list<Book> node = table[heshFunc(key)];
-	std::list<Book> newNode;
-	Book element = find(key);
+	std::list<Element> node = table[heshFunc(key)];
+	std::list<Element> newNode;
+	Element element = find(key);
 	for (auto& i : node) {
-		if (!i.equal(element)) {
+		if ((std::string)(i.key) == (std::string)(key)) {
 			newNode.push_back(i);
 		}
 	}
@@ -71,7 +73,7 @@ void HeshMap::update()
 
 void HeshMap::resize(int size_)
 {
-	std::list<Book>* extendedTable = new std::list<Book>[size_ * 2];
+	std::list<Element>* extendedTable = new std::list<Element>[size_ * 2];
 	memcpy(extendedTable, table, size_ * sizeof(int));
 	table = extendedTable;
 	size = size_;

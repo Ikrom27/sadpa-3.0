@@ -43,64 +43,67 @@ void BookHeadler::outBinFile()
 	fb.close();
 }
 
-void BookHeadler::find(int key)
+Book BookHeadler::find(int key)
 {
 	Book file;
+	int n = 0;
 	std::ifstream fb(fnameBin, std::ios::out | std::ios::binary);
 	fb.read((char*)&file, sizeof(Book));
 	while (!fb.eof()) {
-		if (key == file.NoteNumber) {
-			display(file);
+		if (key == n) {
+			//writeToBook(fb, file);
 			fb.close();
-			return;
+			return file;
 		}
+		n++;
 		fb.read((char*)&file, sizeof(Book));
 	}
 	fb.close();
 }
 
-void BookHeadler::find(char* key)
+int BookHeadler::find(char* key)
 {
 	Book file;
 	std::ifstream fb(fnameBin, std::ios::out | std::ios::binary);
 	fb.read((char*)&file, sizeof(Book));
+	int noteNum = 0;
 	while (!fb.eof()) {
 		if (strcmp(key, file.GroupNumber) == 0) {
-			display(file);
 			fb.close();
-			return;
+			return noteNum;
 		}
+		noteNum++;
 		fb.read((char*)&file, sizeof(Book));
 	}
 	fb.close();
 }
 
-void BookHeadler::removeNote(char* key)
+void BookHeadler::removeNote(int key)
 {
 	Book last_record = getLastRecord();
 	Book buffer;
 
 	std::fstream fs(fnameBin, std::ios_base::in | std::ios_base::out | std::ios_base::binary);
 	int current_position = 0;
+	int n = 0;
 	while (!fs.eof())
 	{
 		current_position = fs.tellg();
 		fs.read((char*)&buffer, sizeof(Book));
-		if (strcmp(key, buffer.GroupNumber) == 0)
+		if (key == n)
 		{
 			fs.seekg(current_position);
 			fs.write((char*)&last_record, sizeof(Book));
 			fs.close();
 			return;
 		}
+		n++;
 	}
 	fs.close();
 }
 
 void BookHeadler::writeToBook(std::ifstream& ft, Book& file)
 {
-	ft >> file.NoteNumber;
-	ft.get();
 	ft.getline(file.GroupNumber, sizeof(file.GroupNumber));
 	ft >> file.NumberOfStudents;
 	ft.get();
@@ -110,7 +113,6 @@ void BookHeadler::writeToBook(std::ifstream& ft, Book& file)
 
 void BookHeadler::display(Book& file)
 {
-	std::cout << file.NoteNumber << std::endl;
 	std::cout << file.GroupNumber << std::endl;
 	std::cout << file.NumberOfStudents << std::endl;
 	std::cout << file.DirectionCode << std::endl;
@@ -120,9 +122,9 @@ void BookHeadler::display(Book& file)
 Book BookHeadler::getLastRecord()
 {
 	Book lastRecord;
-	std::fstream fs(fnameBin, std::ios_base::in | std::ios_base::out | std::ios_base::binary);
+	std::fstream fs(fnameBin, std::ios_base::in | std::ios_base::binary);
 	fs.seekg((-1)*(sizeof(Book)), std::ios_base::end);
 	fs.read(reinterpret_cast<char*>(&lastRecord), sizeof(Book));
-	fs.seekg(0);
+	fs.close();
 	return lastRecord;
 }

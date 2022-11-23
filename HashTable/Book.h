@@ -5,7 +5,6 @@
 
 
 struct Book {
-	int NoteNumber;
 	char GroupNumber[11];
 	int NumberOfStudents;
 	char DirectionCode[9];
@@ -21,12 +20,10 @@ public:
 	BookHeadler(std::string path);
 	void createBinFile();
 	void outBinFile();
-	void find(int key);
-	void find(char* key);
-	void removeNote(char* key);
-
+	Book find(int key);
+	int find(char* key);
+	void removeNote(int key);
 	void writeToBook(std::ifstream& ft, Book& file);
 	void display(Book& file);
 	Book getLastRecord();
-	bool equal(Book& file1, Book& file2);
 };

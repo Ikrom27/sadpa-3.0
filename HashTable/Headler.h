@@ -15,6 +15,4 @@ public:
 	void findByKey(char* key);
 	void HeshMapInfo();
 	void HeshMapShow();
-	void menu();
-	void input();
 };

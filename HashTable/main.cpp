@@ -16,26 +16,21 @@ char* StrToChar(std::string text) {
 	return ch;
 }
 
-void commandFind(Headler& test) {
+char* getKey() {
 	std::string input;
 	std::cout << "Êëş÷ [ÀÀÀÀ-00-00]: \n";
 	std::cout << "Îòâåò: ";
 	std::cin >> input;
 	std::cout << std::endl;
-	long double clock_start = clock();
-	test.findByKey(StrToChar(input));
-	long double clock_end = clock();
-	long double sort_time = clock_end - clock_start;
-	std::cout << "Âğåìÿ âûïîëíåíèÿ: " << sort_time << "ms" << std::endl;
+	return StrToChar(input);
+}
+
+void commandFind(Headler& test) {
+	test.findByKey(getKey());
 }
 
 void commandRemove(Headler& test) {
-	std::string input;
-	std::cout << "Êëş÷ [ÀÀÀÀ-00-00]: \n";
-	std::cout << "Îòâåò: ";
-	std::cin >> input;
-	std::cout << std::endl;
-	test.remove(StrToChar(input));
+	test.remove(StrToChar(getKey()));
 }
 
 int main()
@@ -43,7 +38,8 @@ int main()
     setlocale(LC_ALL, "rus");
 	SetConsoleOutputCP(1251);
 	SetConsoleCP(1251);
-
+	//textGenerator gen;
+	//gen.generateText("test.txt", 1000);
 	std::string input;
 	std::cout << "Ââåäèòå ïóòü ê ôàéëó: ";
 	std::cin >> input;
